@@ -3,113 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Luck Loop: Spin & Win</title>
+    <title>Luck Loop: Big Win</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        body { margin: 0; background: #000; color: gold; font-family: sans-serif; text-align: center; overflow: hidden; touch-action: none; }
+        body { margin: 0; background: #000; color: #FFD700; font-family: sans-serif; text-align: center; overflow: hidden; }
         .screen { display: none; height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center; position: fixed; top:0; left:0; }
         .visible { display: flex !important; }
-        .box { border: 2px solid gold; padding: 20px; border-radius: 20px; width: 85%; background: #111; }
-        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid gold; background: #000; color: #fff; font-size: 16px; }
-        .btn { width: 100%; padding: 15px; background: linear-gradient(gold, #b8860b); color: #000; font-weight: bold; border: none; border-radius: 10px; font-size: 20px; cursor: pointer; }
+        .box { border: 2px solid #FFD700; padding: 20px; border-radius: 20px; width: 85%; background: #111; box-shadow: 0 0 20px rgba(255,215,0,0.3); }
+        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #FFD700; background: #000; color: #fff; font-size: 16px; outline: none; }
+        .btn { width: 100%; padding: 15px; background: linear-gradient(#FFD700, #b8860b); color: #000; font-weight: bold; border: none; border-radius: 10px; font-size: 20px; cursor: pointer; }
         
-        /* Wheel Styling */
-        #wheel-container { position: relative; width: 300px; height: 300px; margin: 20px auto; }
-        #canvas { width: 300px; height: 300px; transition: transform 4s cubic-bezier(0.1, 0, 0.2, 1); }
+        #wheel-container { position: relative; width: 320px; height: 320px; margin: 20px auto; }
+        #canvas { width: 320px; height: 320px; transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1); }
         #pointer { 
-            position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-            width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent;
-            border-top: 30px solid cyan; z-index: 10;
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0; border-left: 20px solid transparent; border-right: 20px solid transparent;
+            border-top: 35px solid #00f2ff; z-index: 10; filter: drop-shadow(0 0 5px #00f2ff);
         }
-        .ad-img { width: 90%; border: 2px solid gold; border-radius: 15px; margin-bottom: 10px; }
+        .ad-img { width: 95%; border: 2px solid #FFD700; border-radius: 15px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
     <div id="s1" class="screen visible">
         <div class="box">
-            <h1>LUCK LOOP</h1>
-            <p style="color:cyan;">ENTER TO SPIN THE WHEEL</p>
-            <input type="text" id="p_name" placeholder="YOUR NAME">
-            <input type="tel" id="p_mob" placeholder="MOBILE NO">
-            <button class="btn" onclick="startSpinFlow()">GET STARTED</button>
+            <h1 style="margin:0; font-size:30px;">LUCK LOOP</h1>
+            <p style="color:cyan;">SPIN FOR 5% TO 50% DISCOUNT!</p>
+            <input type="text" id="p_name" placeholder="APNA NAAM">
+            <input type="tel" id="p_mob" placeholder="MOBILE NUMBER">
+            <button class="btn" onclick="goToWheel()">CHECK YOUR LUCK</button>
         </div>
     </div>
 
     <div id="s2" class="screen">
-        <h2>SPIN TO WIN! 🎡</h2>
+        <h2 style="margin:0;">GOOD LUCK! 🎡</h2>
         <div id="wheel-container">
             <div id="pointer"></div>
-            <canvas id="canvas" width="300" height="300"></canvas>
+            <canvas id="canvas" width="400" height="400"></canvas>
         </div>
-        <button id="spinBtn" class="btn" onclick="spinWheel()" style="width:150px;">SPIN NOW</button>
+        <button id="spinBtn" class="btn" onclick="spinNow()" style="width:180px;">SPIN WHEEL</button>
     </div>
 
     <div id="s3" class="screen">
-        <img src="00d36208-3e40-4401-bb90-a76b38fa74cf.png" class="ad-img">
-        <h2 id="rewardTxt">Calculating...</h2>
-        <button class="btn" onclick="location.reload()" style="width:200px;">PLAY AGAIN</button>
+        <div class="box">
+            <img src="00d36208-3e40-4401-bb90-a76b38fa74cf.png" class="ad-img" onerror="this.style.display='none'">
+            <h2 id="resH" style="color:white; margin:10px 0;">YOU WON!</h2>
+            <h1 id="prizeTxt" style="color:#FFD700; font-size:40px; margin:0;">---</h1>
+            <p style="color:#00f2ff;">Show this screen at the counter!</p>
+            <button class="btn" onclick="location.reload()" style="margin-top:20px;">DONE</button>
+        </div>
     </div>
 
 <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    const sectors = ["FREE COKE", "10% OFF", "TRY AGAIN", "FREE FRIES", "5% OFF", "SURPRISE"];
-    const colors = ["#FFD700", "#000", "#FFD700", "#000", "#FFD700", "#000"];
+    // High Value Prize List
+    const prizes = ["5% OFF", "FREE COKE", "20% OFF", "COLD COFFEE", "50% OFF", "10% OFF", "FREE FRIES", "15% OFF"];
+    const colors = ["#000", "#FFD700", "#000", "#FFD700", "#000", "#FFD700", "#000", "#FFD700"];
     
-    let currentRotation = 0;
+    let rotation = 0;
     let pName = "";
 
-    // Draw Wheel
-    function drawWheel() {
-        const arc = (2 * Math.PI) / sectors.length;
-        for (let i = 0; i < sectors.length; i++) {
+    function draw() {
+        const arc = (2 * Math.PI) / prizes.length;
+        ctx.clearRect(0,0,400,400);
+        for (let i = 0; i < prizes.length; i++) {
             ctx.beginPath();
             ctx.fillStyle = colors[i];
-            ctx.moveTo(150, 150);
-            ctx.arc(150, 150, 150, i * arc, (i + 1) * arc);
+            ctx.moveTo(200, 200);
+            ctx.arc(200, 200, 200, i * arc, (i + 1) * arc);
             ctx.fill();
-            ctx.strokeStyle = "gold"; ctx.stroke();
+            ctx.strokeStyle = "#444"; ctx.lineWidth=2; ctx.stroke();
             
-            // Add Text
             ctx.save();
-            ctx.translate(150, 150);
+            ctx.translate(200, 200);
             ctx.rotate(i * arc + arc / 2);
-            ctx.fillStyle = (colors[i] === "#000") ? "gold" : "black";
-            ctx.font = "bold 14px sans-serif";
-            ctx.fillText(sectors[i], 70, 5);
+            ctx.fillStyle = (colors[i] === "#000") ? "#FFD700" : "#000";
+            ctx.font = "bold 18px sans-serif";
+            ctx.textAlign = "right";
+            ctx.fillText(prizes[i], 180, 10);
             ctx.restore();
         }
     }
-    drawWheel();
+    draw();
 
-    function startSpinFlow() {
+    function goToWheel() {
         pName = document.getElementById('p_name').value;
         if(pName && document.getElementById('p_mob').value.length >= 10) {
             document.getElementById('s1').classList.remove('visible');
             document.getElementById('s2').classList.add('visible');
-        } else { alert("Data dalo bhai!"); }
+        } else { alert("Naam aur Mobile sahi dalo!"); }
     }
 
-    function spinWheel() {
+    function spinNow() {
         document.getElementById('spinBtn').disabled = true;
-        const extraDegrees = Math.floor(2000 + Math.random() * 2000);
-        currentRotation += extraDegrees;
-        canvas.style.transform = `rotate(${currentRotation}deg)`;
+        const rounds = 8 + Math.floor(Math.random() * 5); // 8-13 full rounds
+        const extraDeg = Math.floor(Math.random() * 360);
+        rotation += (rounds * 360) + extraDeg;
+        
+        canvas.style.transform = `rotate(${rotation}deg)`;
 
         setTimeout(() => {
-            confetti();
-            showResult();
-        }, 4500);
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            showWinner();
+        }, 5200);
     }
 
-    function showResult() {
+    function showWinner() {
         document.getElementById('s2').classList.remove('visible');
         document.getElementById('s3').classList.add('visible');
-        // Logic to pick reward based on angle
-        const actualDeg = currentRotation % 360;
-        const prizeIdx = sectors.length - 1 - Math.floor(actualDeg / 60);
-        document.getElementById('rewardTxt').innerText = pName + ", You Won: " + sectors[prizeIdx];
+        
+        const actualDeg = rotation % 360;
+        // Logic to calculate prize based on clockwise rotation and pointer at top
+        const prizeIdx = prizes.length - 1 - Math.floor(((actualDeg + 90) % 360) / (360 / prizes.length));
+        const finalPrize = prizes[prizeIdx < 0 ? 0 : prizeIdx];
+        
+        document.getElementById('prizeTxt').innerText = finalPrize;
+        document.getElementById('resH').innerText = pName + ", CONGRATS!";
     }
 </script>
 </body>
