@@ -1,32 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Luck Loop: Scan-Spin-Order</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        body { margin: 0; background: #000; color: gold; font-family: sans-serif; text-align: center; }
+        .screen { display: none; height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center; position: fixed; top:0; left:0; padding: 20px; box-sizing: border-box; }
+        .visible { display: flex !important; }
+        .box { border: 2px solid gold; padding: 20px; border-radius: 20px; width: 90%; background: #111; }
+        input { width: 90%; padding: 15px; margin: 10px 0; border-radius: 10px; border: 1px solid gold; background: #000; color: #fff; font-size: 16px; text-align: center; }
+        .btn { width: 100%; padding: 15px; background: gold; color: #000; font-weight: bold; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; }
+        canvas { width: 280px; height: 280px; margin: 20px 0; transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1); }
+        .menu-item { display: flex; justify-content: space-between; width: 100%; padding: 10px; border-bottom: 1px dashed #444; }
+    </style>
+</head>
+<body>
+
+    <div id="s1" class="screen visible">
+        <div class="box">
+            <h1>LUCK LOOP</h1>
+            <p>Enter Mobile for OTP</p>
+            <input type="tel" id="p_mob" placeholder="MOBILE NUMBER">
+            <button class="btn" onclick="sendOTP()">SEND OTP</button>
+            <div id="otp_div" style="display:none;">
+                <input type="number" id="p_otp" placeholder="ENTER 4-DIGIT OTP">
+                <button class="btn" onclick="verifyOTP()">VERIFY & SPIN</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="s2" class="screen">
+        <h2 id="spin_head">CHANCE: 3</h2>
+        <canvas id="wheel" width="300" height="300"></canvas>
+        <button class="btn" id="spinBtn" onclick="spinNow()" style="width:200px;">SPIN NOW</button>
+    </div>
+
+    <div id="s3" class="screen" style="overflow-y: auto; justify-content: flex-start;">
+        <div class="box" style="margin-top:20px;">
+            <h2 style="color:cyan;">REWARD: <span id="final_p">5% OFF</span></h2>
+            <hr>
+            <h3>MENU - ORDER NOW</h3>
+            <div class="menu-item"><span>Veg Burger</span> <b>₹99</b> <button onclick="alert('Added')">+</button></div>
+            <div class="menu-item"><span>Paneer Pizza</span> <b>₹199</b> <button onclick="alert('Added')">+</button></div>
+            <div class="menu-item"><span>Cold Coffee</span> <b>₹79</b> <button onclick="alert('Added')">+</button></div>
+            <br>
+            <button class="btn" onclick="alert('Order Placed Successfully!')">PLACE ORDER</button>
+        </div>
+        <img src="00d36208-3e40-4401-bb90-a76b38fa74cf.png" style="width:80%; margin-top:20px; border-radius:10px;">
+    </div>
+
 <script>
-    let chances = 3; // 3 mauke milenge
-    const prizes = ["5% OFF", "FREE COKE", "20% OFF", "FREE COFFEE", "50% OFF", "10% OFF", "FREE FRIES", "15% OFF"];
+    let chances = 3;
+    let rotation = 0;
+    const prizes = ["5% OFF", "FREE COKE", "20% OFF", "COLD COFFEE", "50% OFF", "10% OFF"];
+
+    // OTP Logic
+    function sendOTP() {
+        if(document.getElementById('p_mob').value.length < 10) return alert("Valid No. dalo!");
+        document.getElementById('otp_div').style.display = 'block';
+        alert("Demo OTP sent to your number!");
+    }
+
+    function verifyOTP() {
+        if(document.getElementById('p_otp').value === "1234" || true) { // Demo bypass
+            document.getElementById('s1').classList.remove('visible');
+            document.getElementById('s2').classList.add('visible');
+            drawWheel();
+        }
+    }
+
+    // Wheel Logic
+    function drawWheel() {
+        const ctx = document.getElementById('wheel').getContext('2d');
+        const arc = (2 * Math.PI) / 6;
+        for(let i=0; i<6; i++) {
+            ctx.beginPath();
+            ctx.fillStyle = i % 2 === 0 ? "black" : "gold";
+            ctx.moveTo(150, 150); ctx.arc(150, 150, 150, i*arc, (i+1)*arc); ctx.fill();
+            ctx.save(); ctx.translate(150,150); ctx.rotate(i*arc+arc/2);
+            ctx.fillStyle = i%2===0 ? "gold" : "black"; ctx.fillText(prizes[i], 70, 5); ctx.restore();
+        }
+    }
 
     function spinNow() {
         if(chances <= 0) return;
-        
-        document.getElementById('spinBtn').disabled = true;
         chances--;
-        document.getElementById('chanceCount').innerText = chances;
-
-        const rounds = 8 + Math.floor(Math.random() * 5);
-        const extraDeg = Math.floor(Math.random() * 360);
-        rotation += (rounds * 360) + extraDeg;
-        canvas.style.transform = `rotate(${rotation}deg)`;
-
+        document.getElementById('spin_head').innerText = "CHANCES LEFT: " + chances;
+        rotation += 1800 + Math.random()*1800;
+        document.getElementById('wheel').style.transform = `rotate(${rotation}deg)`;
+        
         setTimeout(() => {
-            const actualDeg = rotation % 360;
-            const prizeIdx = prizes.length - 1 - Math.floor(((actualDeg + 90) % 360) / (360 / prizes.length));
-            const currentWin = prizes[prizeIdx < 0 ? 0 : prizeIdx];
-
             if(chances > 0) {
-                // Agar chances bache hain toh pucho "Accept" ya "Retry"
-                alert("You won: " + currentWin + "\nRemaining Chances: " + chances + "\nSpin again for a better reward?");
-                document.getElementById('spinBtn').disabled = false;
-            } else {
-                // Final Result
-                showFinalScreen(currentWin);
+                if(confirm("You won: " + prizes[0] + "! Want to retry for 50% OFF?")) return;
             }
-        }, 5200);
+            confetti();
+            document.getElementById('s2').classList.remove('visible');
+            document.getElementById('s3').classList.add('visible');
+        }, 5500);
     }
 </script>
+</body>
+</html>
